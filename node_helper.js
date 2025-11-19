@@ -88,6 +88,13 @@ module.exports = NodeHelper.create({
         }
     },
 
+    formatTime: function (isoString) {
+        if (!isoString) return "";
+        const date = new Date(isoString);
+        // Format to HH:mm in local time
+        return date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+    },
+
     determineStatus: function (flight) {
         // Avinor XML:
         // <status code="A" time="2023-..." /> OR just empty <status />
@@ -103,7 +110,7 @@ module.exports = NodeHelper.create({
         if (flight.status && typeof flight.status === 'object') {
             const code = flight.status.code;
             const time = flight.status.time;
-            const timeStr = time ? '@ ' + time.substring(11, 16) : '';
+            const timeStr = time ? '@ ' + this.formatTime(time) : '';
 
             if (code === 'A') statusText += `Landed ${timeStr}`;
             else if (code === 'D') statusText += `Departed ${timeStr}`;
@@ -114,7 +121,7 @@ module.exports = NodeHelper.create({
             // No status update, show schedule
             // If delayed but no new time?
             if (!statusText) {
-                statusText = `Scheduled ${flight.schedule_time ? flight.schedule_time.substring(11, 16) : ''}`;
+                statusText = `Scheduled ${this.formatTime(flight.schedule_time)}`;
             }
         }
 
