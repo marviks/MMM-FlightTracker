@@ -1,0 +1,21 @@
+{
+    "name": "mmm-flighttracker",
+    "version": "1.0.0",
+    "description": "MagicMirror2 module for tracking flights using Avinor API",
+    "main": "node_helper.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "magicmirror",
+        "flight",
+        "tracker",
+        "avinor"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "axios": "^1.6.0",
+        "fast-xml-parser": "^4.3.2"
+    }
+}
