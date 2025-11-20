@@ -4,11 +4,15 @@ A MagicMirror2 module to track flights using the Avinor Flight Data API.
 
 This module allows you to track specific flights arriving at or departing from a configured "home airport". It is designed to track friends and family visiting you, or your own trips.
 
+This module was vibe coded.
+
 ## Features
 
 *   **Multiple Flight Tracking**: Track multiple flights simultaneously.
 *   **Date-Aware**: Flights only appear when they are active on the specified date.
-*   **Status Updates**: Shows real-time status (Landed, Departed, Delayed, Estimated) and times.
+*   **Future Flight Preview**: Displays upcoming flights with date and label.
+*   **Smart Status Updates**: Shows real-time status with specific icons (Landed, Departed, Delayed, Cancelled).
+*   **Schedule Changes**: Visually indicates time changes with strikethrough on the original time.
 *   **Route Display**: Clearly shows if a flight is arriving (Remote -> Home) or departing (Home -> Remote).
 *   **Custom Labels**: Assign friendly names like "Mom" or "Dad" to flights.
 *   **Free API**: Uses the open Avinor Flight Data API (no API key required).
