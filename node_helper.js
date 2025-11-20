@@ -58,12 +58,27 @@ module.exports = NodeHelper.create({
             const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
             flights.forEach(configFlight => {
-                // Check if flight is active today
-                if (configFlight.date && configFlight.date !== today) {
+                if (!configFlight.date) return;
+
+                // Simple string comparison works for YYYY-MM-DD
+                if (configFlight.date < today) {
+                    // Past flight, ignore
+                    return;
+                } else if (configFlight.date > today) {
+                    // Future flight
+                    trackedFlights.push({
+                        flight_id: configFlight.flightNumber,
+                        label: configFlight.label || configFlight.flightNumber,
+                        status: "Upcoming",
+                        schedule_time: null, // No time yet
+                        arr_dep: null, // Unknown or irrelevant for now
+                        airport: null,
+                        date: configFlight.date
+                    });
                     return;
                 }
 
-                // Find matching flight in API data
+                // Today's flight: Find matching flight in API data
                 // API flightId usually looks like "SK4167"
                 // We match against configFlight.flightNumber
                 const match = allFlights.find(f => f.flight_id === configFlight.flightNumber);

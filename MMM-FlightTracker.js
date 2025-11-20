@@ -40,17 +40,26 @@ Module.register("MMM-FlightTracker", {
             var icon = "fa-plane";
             var statusText = flight.status || "Scheduled"; // 'status' from node_helper is the text description
 
-            if (statusText.includes("Landed")) icon = "fa-plane-arrival";
-            else if (statusText.includes("Departed")) icon = "fa-plane-departure";
-            else if (statusText.includes("Cancelled")) icon = "fa-ban";
-            else if (statusText.includes("Estimated") || statusText.includes("Delayed")) icon = "fa-clock";
+            if (statusText === "Upcoming") {
+                icon = "fa-calendar";
+            } else if (statusText.includes("Landed")) {
+                icon = "fa-plane-arrival";
+            } else if (statusText.includes("Departed")) {
+                icon = "fa-plane-departure";
+            } else if (statusText.includes("Cancelled")) {
+                icon = "fa-ban";
+            } else if (statusText.includes("Estimated") || statusText.includes("Delayed")) {
+                icon = "fa-clock";
+            }
 
             // Route
             var home = this.config.homeAirport;
             var remote = flight.airport || "???";
             var routeStr = "";
 
-            if (flight.arr_dep === 'A') {
+            if (statusText === "Upcoming") {
+                routeStr = ""; // No route info for future flights usually, or we could show just the flight number if not shown elsewhere
+            } else if (flight.arr_dep === 'A') {
                 routeStr = `${remote} <i class="fa fa-long-arrow-right"></i> ${home}`;
             } else if (flight.arr_dep === 'D') {
                 routeStr = `${home} <i class="fa fa-long-arrow-right"></i> ${remote}`;
@@ -65,20 +74,26 @@ Module.register("MMM-FlightTracker", {
             };
 
             var timeDisplay = "";
-            var scheduleTimeFormatted = formatTime(flight.schedule_time);
 
-            // Check for new time in xmlStatus
-            if (flight.xmlStatus && flight.xmlStatus.time) {
-                var newTimeFormatted = formatTime(flight.xmlStatus.time);
-
-                // If times differ, show old (strikethrough) and new
-                if (newTimeFormatted !== scheduleTimeFormatted) {
-                    timeDisplay = `<span style="text-decoration: line-through; opacity: 0.6;">${scheduleTimeFormatted}</span> ${newTimeFormatted}`;
-                } else {
-                    timeDisplay = newTimeFormatted;
-                }
+            if (statusText === "Upcoming") {
+                // For upcoming flights, display the date
+                timeDisplay = flight.date;
             } else {
-                timeDisplay = scheduleTimeFormatted;
+                var scheduleTimeFormatted = formatTime(flight.schedule_time);
+
+                // Check for new time in xmlStatus
+                if (flight.xmlStatus && flight.xmlStatus.time) {
+                    var newTimeFormatted = formatTime(flight.xmlStatus.time);
+
+                    // If times differ, show old (strikethrough) and new
+                    if (newTimeFormatted !== scheduleTimeFormatted) {
+                        timeDisplay = `<span style="text-decoration: line-through; opacity: 0.6;">${scheduleTimeFormatted}</span> ${newTimeFormatted}`;
+                    } else {
+                        timeDisplay = newTimeFormatted;
+                    }
+                } else {
+                    timeDisplay = scheduleTimeFormatted;
+                }
             }
 
             // Construct HTML
