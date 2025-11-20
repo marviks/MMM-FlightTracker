@@ -25,7 +25,7 @@ This module was vibe coded.
     ```
 2.  Clone this repository:
     ```bash
-    git clone https://github.com/yourusername/MMM-FlightTracker.git
+    git clone https://github.com/marviks/MMM-FlightTracker.git
     ```
 3.  Navigate to the module directory:
     ```bash
