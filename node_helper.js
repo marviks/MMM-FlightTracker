@@ -73,8 +73,8 @@ module.exports = NodeHelper.create({
                     trackedFlights.push({
                         ...match,
                         label: configFlight.label || match.flight_id,
-                        // Normalize status
-                        status: this.determineStatus(match),
+                        // Pass raw status (from ...match) and computed text
+                        statusText: this.determineStatus(match),
                         // Ensure arr_dep is passed explicitly if needed, though ...match covers it
                     });
                 }
@@ -88,17 +88,9 @@ module.exports = NodeHelper.create({
         }
     },
 
-    formatTime: function (isoString) {
-        if (!isoString) return "";
-        const date = new Date(isoString);
-        // Format to HH:mm in local time
-        return date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-    },
-
     determineStatus: function (flight) {
-        // Avinor XML:
-        // <status code="A" time="2023-..." /> OR just empty <status />
-        // fast-xml-parser: if attributes, it's an object. If empty, it's "".
+        // Return only the status description, not the time.
+        // Time will be formatted on the client side.
 
         let statusText = "";
 
@@ -109,19 +101,15 @@ module.exports = NodeHelper.create({
 
         if (flight.status && typeof flight.status === 'object') {
             const code = flight.status.code;
-            const time = flight.status.time;
-            const timeStr = time ? '@ ' + this.formatTime(time) : '';
 
-            if (code === 'A') statusText += `Landed ${timeStr}`;
-            else if (code === 'D') statusText += `Departed ${timeStr}`;
-            else if (code === 'C') statusText = "Cancelled"; // Override delayed if cancelled
-            else if (code === 'E') statusText += `Estimated ${timeStr}`;
+            if (code === 'A') statusText += "Landed";
+            else if (code === 'D') statusText += "Departed";
+            else if (code === 'C') statusText = "Cancelled";
+            else if (code === 'E') statusText += "Estimated";
             else statusText += `Status: ${code}`;
         } else {
-            // No status update, show schedule
-            // If delayed but no new time?
             if (!statusText) {
-                statusText = `Scheduled ${this.formatTime(flight.schedule_time)}`;
+                statusText = "Scheduled";
             }
         }
 

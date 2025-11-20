@@ -36,11 +36,10 @@ Module.register("MMM-FlightTracker", {
             var item = document.createElement("li");
             item.className = "flight-item";
 
-            // Determine icon based on status (simple text for now, or font-awesome if available)
-            // MagicMirror usually has FontAwesome.
+            // Determine icon based on status
             var icon = "fa-plane";
-            if (flight.status && flight.status.includes("Landed")) icon = "fa-plane-arrival";
-            if (flight.status && flight.status.includes("Departed")) icon = "fa-plane-departure";
+            if (flight.statusText && flight.statusText.includes("Landed")) icon = "fa-plane-arrival";
+            if (flight.statusText && flight.statusText.includes("Departed")) icon = "fa-plane-departure";
 
             // Route:
             // flight.arr_dep: 'A' = Arrival (to homeAirport), 'D' = Departure (from homeAirport)
@@ -59,6 +58,28 @@ Module.register("MMM-FlightTracker", {
                 routeStr = `${remote} <-> ${home}`;
             }
 
+            // Time Formatting (Client-side for correct timezone)
+            var timeStr = "";
+            var rawTime = null;
+
+            // Check if we have a status time (actual event time)
+            if (flight.status && flight.status.time) {
+                rawTime = flight.status.time;
+            } else {
+                // Fallback to schedule time
+                rawTime = flight.schedule_time;
+            }
+
+            if (rawTime) {
+                var date = new Date(rawTime);
+                timeStr = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            }
+
+            var statusDisplay = flight.statusText || "Scheduled";
+            if (timeStr) {
+                statusDisplay += ` @ ${timeStr}`;
+            }
+
             // Display
             item.innerHTML = `
         <div class="flight-main">
@@ -66,7 +87,7 @@ Module.register("MMM-FlightTracker", {
           <span class="flight-id xsmall dimmed">${flight.flight_id}</span>
         </div>
         <div class="flight-details small">
-          <span class="flight-status"><i class="fa ${icon}"></i> ${flight.status}</span>
+          <span class="flight-status"><i class="fa ${icon}"></i> ${statusDisplay}</span>
           <span class="flight-route dimmed">${routeStr}</span>
         </div>
       `;
