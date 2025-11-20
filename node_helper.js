@@ -73,8 +73,8 @@ module.exports = NodeHelper.create({
                     trackedFlights.push({
                         ...match,
                         label: configFlight.label || match.flight_id,
-                        // Pass raw status (from ...match) and computed text
-                        statusText: this.determineStatus(match),
+                        // Normalize status
+                        status: this.determineStatus(match),
                         // Ensure arr_dep is passed explicitly if needed, though ...match covers it
                     });
                 }
@@ -86,6 +86,13 @@ module.exports = NodeHelper.create({
         } catch (error) {
             console.error("Error fetching flight data:", error.message);
         }
+    },
+
+    formatTime: function (isoString) {
+        if (!isoString) return "";
+        const date = new Date(isoString);
+        // Format to HH:mm in local time
+        return date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
     },
 
     determineStatus: function (flight) {

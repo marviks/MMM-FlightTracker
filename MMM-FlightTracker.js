@@ -36,58 +36,59 @@ Module.register("MMM-FlightTracker", {
             var item = document.createElement("li");
             item.className = "flight-item";
 
-            // Determine icon based on status
+            // Determine icon and status text
             var icon = "fa-plane";
-            if (flight.statusText && flight.statusText.includes("Landed")) icon = "fa-plane-arrival";
-            if (flight.statusText && flight.statusText.includes("Departed")) icon = "fa-plane-departure";
+            var statusText = flight.status || "Scheduled"; // 'status' from node_helper is the text description
 
-            // Route:
-            // flight.arr_dep: 'A' = Arrival (to homeAirport), 'D' = Departure (from homeAirport)
-            // flight.airport: The remote airport code.
+            if (statusText.includes("Landed")) icon = "fa-plane-arrival";
+            else if (statusText.includes("Departed")) icon = "fa-plane-departure";
+            else if (statusText.includes("Cancelled")) icon = "fa-ban";
+            else if (statusText.includes("Estimated") || statusText.includes("Delayed")) icon = "fa-clock";
+
+            // Route
             var home = this.config.homeAirport;
             var remote = flight.airport || "???";
             var routeStr = "";
 
             if (flight.arr_dep === 'A') {
                 routeStr = `${remote} <i class="fa fa-long-arrow-right"></i> ${home}`;
-                if (!icon.includes("arrival")) icon = "fa-plane-arrival"; // Ensure icon matches
             } else if (flight.arr_dep === 'D') {
                 routeStr = `${home} <i class="fa fa-long-arrow-right"></i> ${remote}`;
-                if (!icon.includes("departure")) icon = "fa-plane-departure";
             } else {
                 routeStr = `${remote} <-> ${home}`;
             }
 
-            // Time Formatting (Client-side for correct timezone)
-            var timeStr = "";
-            var rawTime = null;
+            // Time Formatting
+            const formatTime = (isoString) => {
+                if (!isoString) return "";
+                return new Date(isoString).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            };
 
-            // Check if we have a status time (actual event time)
-            if (flight.status && flight.status.time) {
-                rawTime = flight.status.time;
+            var timeDisplay = "";
+            var scheduleTimeFormatted = formatTime(flight.schedule_time);
+
+            // Check for new time in xmlStatus
+            if (flight.xmlStatus && flight.xmlStatus.time) {
+                var newTimeFormatted = formatTime(flight.xmlStatus.time);
+
+                // If times differ, show old (strikethrough) and new
+                if (newTimeFormatted !== scheduleTimeFormatted) {
+                    timeDisplay = `<span style="text-decoration: line-through; opacity: 0.6;">${scheduleTimeFormatted}</span> ${newTimeFormatted}`;
+                } else {
+                    timeDisplay = newTimeFormatted;
+                }
             } else {
-                // Fallback to schedule time
-                rawTime = flight.schedule_time;
+                timeDisplay = scheduleTimeFormatted;
             }
 
-            if (rawTime) {
-                var date = new Date(rawTime);
-                timeStr = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-            }
-
-            var statusDisplay = flight.statusText || "Scheduled";
-            if (timeStr) {
-                statusDisplay += ` @ ${timeStr}`;
-            }
-
-            // Display
+            // Construct HTML
             item.innerHTML = `
         <div class="flight-main">
           <span class="flight-label bright">${flight.label}</span>
           <span class="flight-id xsmall dimmed">${flight.flight_id}</span>
         </div>
         <div class="flight-details small">
-          <span class="flight-status"><i class="fa ${icon}"></i> ${statusDisplay}</span>
+          <span class="flight-status"><i class="fa ${icon}"></i> ${statusText} ${timeDisplay}</span>
           <span class="flight-route dimmed">${routeStr}</span>
         </div>
       `;
