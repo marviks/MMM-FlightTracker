@@ -5,7 +5,7 @@ const { XMLParser } = require("fast-xml-parser");
 module.exports = NodeHelper.create({
     start: function () {
         console.log("MMM-FlightTracker helper started...");
-        this.parser = new XMLParser();
+        this.parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "" });
     },
 
     socketNotificationReceived: function (notification, payload) {
@@ -75,6 +75,8 @@ module.exports = NodeHelper.create({
                         label: configFlight.label || match.flight_id,
                         // Normalize status
                         status: this.determineStatus(match),
+                        // Pass raw XML status object to access time/code on frontend
+                        xmlStatus: match.status,
                         // Ensure arr_dep is passed explicitly if needed, though ...match covers it
                     });
                 }
